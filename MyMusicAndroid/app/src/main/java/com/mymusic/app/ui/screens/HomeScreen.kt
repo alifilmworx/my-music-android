@@ -111,7 +111,8 @@ fun MiniPlayerBar(viewModel: MainViewModel, nav: NavHostController) {
             }
             IconButton(onClick = { viewModel.togglePlay() }) {
                 Icon(
-                    if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                    if (state.isPlaying) Icons.Filled.Pause
+                    else Icons.Filled.PlayArrow,
                     contentDescription = "Play/Pause"
                 )
             }

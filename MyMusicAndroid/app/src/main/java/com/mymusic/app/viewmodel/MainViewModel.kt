@@ -130,6 +130,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun addToPlaylist(playlistId: Long, trackId: Long) = viewModelScope.launch { repo.addTrackToPlaylist(playlistId, trackId) }
     fun removeFromPlaylist(playlistId: Long, trackId: Long) = viewModelScope.launch { repo.removeTrackFromPlaylist(playlistId, trackId) }
 
+    private val _playlistTrackIds = MutableStateFlow<Map<Long, List<Long>>>(emptyMap())
+    val playlistTrackIds: StateFlow<Map<Long, List<Long>>> = _playlistTrackIds
+
+    /** Keeps every playlist's track-id list live, the same way customPlaylists[].trackIds
+     *  worked in the web version - used both to render a playlist's contents and to know
+     *  which playlists a given song already belongs to (for the Add/Remove to list menu). */
+    fun watchPlaylist(playlistId: Long) {
+        viewModelScope.launch {
+            repo.trackIdsForPlaylist(playlistId).collect { ids ->
+                _playlistTrackIds.value = _playlistTrackIds.value.toMutableMap().apply { put(playlistId, ids) }
+            }
+        }
+    }
+
+    suspend fun playlistIdsContaining(trackId: Long): List<Long> =
+        _state.value.playlists.filter { pl -> playlistTrackIds.value[pl.id]?.contains(trackId) == true }.map { it.id }
+
     private fun Track.toMediaItem(): MediaItem =
         MediaItem.Builder()
             .setMediaId(id.toString())

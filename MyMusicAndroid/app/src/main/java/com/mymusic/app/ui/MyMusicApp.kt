@@ -35,6 +35,44 @@ fun MyMusicApp(viewModel: MainViewModel, onRequestPermission: () -> Unit) {
             composable("home") { HomeScreen(viewModel, navController) }
             composable("library") { LibraryScreen(viewModel, navController) }
             composable("nowplaying") { NowPlayingScreen(viewModel, navController) }
+
+            composable("liked") {
+                val s by viewModel.state.collectAsState()
+                val tracks = s.library.filter { s.liked.contains(it.id) }
+                com.mymusic.app.ui.screens.CollectionDetailScreen("Thumbs up", tracks, viewModel, navController)
+            }
+            composable(
+                "playlist/{id}",
+                arguments = listOf(androidx.navigation.navArgument("id") { type = androidx.navigation.NavType.LongType })
+            ) { backStackEntry ->
+                val id = backStackEntry.arguments?.getLong("id") ?: return@composable
+                val s by viewModel.state.collectAsState()
+                LaunchedEffect(id) { viewModel.watchPlaylist(id) }
+                val trackIdsMap by viewModel.playlistTrackIds.collectAsState()
+                val ids = trackIdsMap[id].orEmpty()
+                val tracks = s.library.filter { ids.contains(it.id) }
+                val name = s.playlists.find { it.id == id }?.name ?: "Playlist"
+                com.mymusic.app.ui.screens.CollectionDetailScreen(name, tracks, viewModel, navController, playlistId = id)
+            }
+            composable(
+                "collection/{type}/{key}",
+                arguments = listOf(
+                    androidx.navigation.navArgument("type") { type = androidx.navigation.NavType.StringType },
+                    androidx.navigation.navArgument("key") { type = androidx.navigation.NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val type = backStackEntry.arguments?.getString("type") ?: return@composable
+                val key = backStackEntry.arguments?.getString("key") ?: return@composable
+                val s by viewModel.state.collectAsState()
+                val tracks = when (type) {
+                    "artist" -> s.library.filter { it.artist == key }
+                    "album" -> s.library.filter { it.album == key }
+                    "genre" -> s.library.filter { (it.genre ?: "Unknown genre") == key }
+                    "folder" -> s.library.filter { it.folder == key }
+                    else -> emptyList()
+                }
+                com.mymusic.app.ui.screens.CollectionDetailScreen(key, tracks, viewModel, navController)
+            }
         }
     }
 }
