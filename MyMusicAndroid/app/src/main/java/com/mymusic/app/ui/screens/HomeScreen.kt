@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.*
@@ -24,6 +26,7 @@ import com.mymusic.app.data.Track
 import com.mymusic.app.ui.theme.Orange
 import com.mymusic.app.viewmodel.MainViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(viewModel: MainViewModel, nav: NavHostController) {
     val state by viewModel.state.collectAsState()
@@ -108,8 +111,7 @@ fun MiniPlayerBar(viewModel: MainViewModel, nav: NavHostController) {
             }
             IconButton(onClick = { viewModel.togglePlay() }) {
                 Icon(
-                    if (state.isPlaying) androidx.compose.material.icons.Icons.Filled.Pause
-                    else androidx.compose.material.icons.Icons.Filled.PlayArrow,
+                    if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                     contentDescription = "Play/Pause"
                 )
             }
